@@ -4,11 +4,32 @@ import tw from 'twrnc';
 import { useNavigation } from '@react-navigation/native';
 import Button from '../components/Button';
 import TextInput from '../components/TextInput';
+import { translateText } from '../services/api';
 
 export default function TranslatorScreen() {
   const [inputText, setInputText] = useState('');
   const [targetLanguage, setTargetLanguage] = useState('Spanish');
+  const [translatedText, setTranslatedText] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigation = useNavigation();
+
+  const handleTranslate = async () => {
+    if (!inputText) {
+      console.log('Please enter text to translate');
+      return;
+    }
+    setLoading(true);
+    try {
+      const result = await translateText(inputText, targetLanguage);
+      setTranslatedText(result);
+      console.log('Translation Request:', { inputText, targetLanguage, translatedText: result });
+    } catch (error) {
+      console.error('Error translating:', error);
+      setTranslatedText('Translation failed');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <View style={tw`flex-1 bg-white p-4`}>
@@ -33,12 +54,11 @@ export default function TranslatorScreen() {
           onPress={() => setTargetLanguage('French')}
         />
       </View>
-      <Text style={tw`text-lg mb-4`}>Translated Text: (Coming soon)</Text>
+      <Text style={tw`text-lg mb-4`}>Translated Text: {translatedText || '(Waiting for translation)'}</Text>
       <Button
-        title="Translate"
-        onPress={() => {
-          console.log('Translation Request:', { inputText, targetLanguage });
-        }}
+        title={loading ? 'Translating...' : 'Translate'}
+        onPress={handleTranslate}
+        disabled={loading}
       />
       <Button
         title="Back to Home"
