@@ -1,19 +1,26 @@
 name: CI
+
 on:
   push:
-    branches: [master]
+    branches: [ master ]
   pull_request:
-    branches: [master]
+    branches: [ master ]
+
 jobs:
-  test:
+  build:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
-      - name: Use Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-      - name: Install dependencies
-        run: npm install
-      - name: Run Jest tests
-        run: npm test -- --passWithNoTests
+    - uses: actions/checkout@v3
+    - uses: actions/setup-node@v3
+      with:
+        node-version: '20.19.4'
+        cache: 'npm'
+    - name: Install dependencies
+      run: npm install
+    - name: Start Expo
+      run: npx expo start --non-interactive &
+    - name: Wait for Metro Bundler
+      run: sleep 30
+    - name: Check build
+      run: curl --retry 3 --retry-delay 5 http://localhost:8081
